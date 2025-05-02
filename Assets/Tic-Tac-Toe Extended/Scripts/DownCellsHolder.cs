@@ -1,13 +1,7 @@
 using System;
-using UnityEngine;
-using UnityEngine.Events;
 
-public class CellsHeader : MonoBehaviour
+public class DownCellsHolder : CellsHolder
 {
-    private Symbols[,] _table;
-    [SerializeField, Range(3, 5)]
-    private int _winCounter = 3;
-    public UnityEvent<Vector2, Vector2, Color> OnWin;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -21,12 +15,12 @@ public class CellsHeader : MonoBehaviour
             int x = i % count;
             int y = i / count;
             cell.InitPostion( x, y);
+            cell.OnCellRegistrateTurn += OnCellRegistrateTurn;
             _table[y, x] = Symbols.NONE;
         }
-        Cell.OnCellRegistrateTurn += OnCellRegistrateTurn;
     }
 
-    private void OnCellRegistrateTurn(Cell cell)
+    protected override void OnCellRegistrateTurn(Cell cell)
     {
         var pos = cell.GetPosition();
         _table[pos.x, pos.y] = cell.GetSymbol();
@@ -34,13 +28,8 @@ public class CellsHeader : MonoBehaviour
         {
             OnWin?.Invoke(GetCellPosition(begin), GetCellPosition(end), TurnController.GetColor());
         }
+        OnCellRegistratedTurn?.Invoke(cell);
         TurnController.TurnChange();
     }
 
-    private Vector2 GetCellPosition(Point point)
-    {
-        int number = point.x + point.y * (int)Math.Sqrt(transform.childCount);
-        var cell = transform.GetChild(number);
-        return new Vector2(cell.localPosition.x, cell.localPosition.y);
-    }
 }

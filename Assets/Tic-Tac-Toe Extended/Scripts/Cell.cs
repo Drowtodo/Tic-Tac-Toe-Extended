@@ -6,10 +6,12 @@ using UnityEngine.EventSystems;
 public class Cell : MonoBehaviour, IPointerClickHandler
 {
     private TMP_Text m_Text;
-    private Point _position = new Point(-1, -1);
+    private Point _position = new(-1, -1);
     private Symbols _curentSymbol;
+    [SerializeField]
+    private bool _clickReacting = true;
     
-    public static event Action<Cell> OnCellRegistrateTurn;
+    public event Action<Cell> OnCellRegistrateTurn;
 
     /// <summary>
     /// По клику в клетку проставляется символ текущего хода и вызывается событие регистрации хода
@@ -17,20 +19,34 @@ public class Cell : MonoBehaviour, IPointerClickHandler
     /// <param name="eventData"></param>
     public void OnPointerClick(PointerEventData eventData)
     {
-        if(string.IsNullOrEmpty(m_Text.text))
+        if(_clickReacting && string.IsNullOrEmpty(m_Text.text))
         {
-            m_Text.text = TurnController.GetStylizedTurnName();
-            _curentSymbol = TurnController.GetCurrentTurnName();
-            OnCellRegistrateTurn?.Invoke(this);
+            Set();
         }
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        m_Text = GetComponentInChildren<TMP_Text>();
+        for(int i = 0; i< transform.childCount; i++)
+        {
+            if(transform.GetChild(i).gameObject.TryGetComponent<TMP_Text>(out m_Text))
+            {
+                break;
+            }
+        }
     }
 
+
+    /// <summary>
+    /// Вызвать для установки символа
+    /// </summary>
+    public void Set()
+    {
+        m_Text.text = TurnController.GetStylizedTurnName();
+        _curentSymbol = TurnController.GetCurrentTurnName();
+        OnCellRegistrateTurn?.Invoke(this);
+    }
 
     /// <summary>
     /// Инициализирует позицию клетки
